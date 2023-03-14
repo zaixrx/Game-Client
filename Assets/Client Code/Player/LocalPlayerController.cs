@@ -5,22 +5,26 @@ public struct InputPayload
 {
     public int Tick;
     public float Time;
-    public Vector3 Input;
-    public Vector3 Rotation;
+    public Vector2 Input;
+    public Vector2 Rotation;
 }
 
 [Serializable]
-public struct StatePayload
+public struct StatePayload 
 {
     public int Tick;
     public float Time;
-    public Vector3 Rotation;
     public Vector3 Position;
+    public Vector2 Rotation;
 }
 
 public class LocalPlayerController : MonoBehaviour
 {
-    [SerializeField] private float playerSpeed = 5f;
+    [SerializeField]
+    private float playerSpeed = 5f;
+
+    [SerializeField]
+    private Transform playerCamera;
 
     #region Client Predection
     private float ticksTimeDelta;
@@ -37,6 +41,9 @@ public class LocalPlayerController : MonoBehaviour
     private StatePayload defaultSP;
     #endregion
 
+    private int tick;
+    private float time;
+
     void Start()
     {
         ticksTimeDelta = 1f / 30f;
@@ -46,16 +53,29 @@ public class LocalPlayerController : MonoBehaviour
         statePayloads = new StatePayload[Constants.DATA_BUFFER_SIZE];
     }
 
+    void Update()
+    {
+        time += Time.deltaTime;
+    }
+
     void FixedUpdate()
     {
         if (!Client.Instance.isConnected) return;
 
-        HandleTick(Client.Instance.serverTick, Client.Instance.time);
+        HandleTick(time);
+
+        tick++;
     }
 
+    int previousTick = -1;
     float xInput, yInput;
-    private void HandleTick(int tick, float time)
+    private void HandleTick(float time)
     {
+        // This litertally took me like 2 days to figure out
+        if (previousTick == tick) return;
+
+        previousTick = tick;
+
         // Checks if there is a new state that is not processed yet
         if (!receivedStatePayload.Equals(defaultSP) && lastProcessedState.Equals(defaultSP) ||
             !receivedStatePayload.Equals(lastProcessedState))
@@ -73,7 +93,7 @@ public class LocalPlayerController : MonoBehaviour
             Tick = tick,
             Time = time,
             Rotation = transform.eulerAngles,
-            Input = new Vector3(xInput, 0, yInput)
+            Input = new Vector3(xInput, yInput)
         };
         StatePayload statePayload = Move(inputPayload);
 
@@ -83,7 +103,7 @@ public class LocalPlayerController : MonoBehaviour
         ClientSend.PlayerInput(inputPayload);
     }
 
-    [SerializeField]
+    [SerializeField, Tooltip("Should be turned off only when debugging")]
     private bool reconcile = true;
 
     public void Reconcile(int tick)
@@ -100,7 +120,6 @@ public class LocalPlayerController : MonoBehaviour
             Debug.Log($"Reconcile {distance}");
 
             transform.position = receivedStatePayload.Position;
-            transform.eulerAngles = receivedStatePayload.Rotation;
 
             statePayloads[index] = receivedStatePayload;
 
@@ -121,11 +140,9 @@ public class LocalPlayerController : MonoBehaviour
 
     public StatePayload Move(InputPayload payload)
     {
-        ticksTimeDelta = 1f / 30f;
-
         transform.eulerAngles = payload.Rotation;
 
-        movementVector = transform.right * payload.Input.x + transform.forward * payload.Input.z;
+        movementVector = transform.right * payload.Input.x + transform.forward * payload.Input.y;
         movementVector *= playerSpeed * ticksTimeDelta;
 
         transform.position += movementVector;
@@ -134,13 +151,10 @@ public class LocalPlayerController : MonoBehaviour
         {
             Time = payload.Time,
             Tick = payload.Tick,
-            Rotation = transform.eulerAngles,
+            Rotation = new Vector2(playerCamera.eulerAngles.x, transform.eulerAngles.y),
             Position = transform.position
         };
     }
 
-    public void SetPlayerState(StatePayload payload)
-    {
-        receivedStatePayload = payload;
-    }
+    public void SetPlayerState(StatePayload payload) => receivedStatePayload = payload;
 }

@@ -1,4 +1,6 @@
-﻿public static class ClientSend
+﻿using UnityEngine;
+
+public static class ClientSend
 {
     public static void SendTcpData(Packet packet)
     {
@@ -22,7 +24,7 @@
             packet.Write(payload.Input);
             packet.Write(payload.Rotation);
 
-            SendTcpData(packet);
+            SendUdpData(packet);
         }
     }
 

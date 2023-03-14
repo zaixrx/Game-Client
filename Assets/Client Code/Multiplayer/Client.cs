@@ -24,7 +24,6 @@ public class Client : MonoBehaviour {
     public delegate void PacketHandler(Packet packet);    
     public Dictionary<ushort, PacketHandler> packetHandlers;
 
-    public float time;
     public int serverTick;
 
     // Singleton
@@ -55,11 +54,6 @@ public class Client : MonoBehaviour {
         endPoint = new(address, serverData.port);
 
         ConnectTcpClient();
-    }
-
-    void FixedUpdate()
-    {
-        time += Time.deltaTime;
     }
 
     void OnApplicationQuit()

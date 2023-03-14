@@ -31,17 +31,16 @@ public class ClientHandle {
         {
             Tick = packet.ReadInt(),
             Time = packet.ReadFloat(),
-            Rotation = packet.ReadVector3(),
-            Position = packet.ReadVector3()
+            Position = packet.ReadVector3(),
+            Rotation = packet.ReadVector2()
         };
 
         if (GameManager.Instance.players[id].isLocalPlayer)
         {
             GameManager.Instance.localPlayer.SetPlayerState(payload);
+            return;
         }
-        else
-        {
-            GameManager.Instance.remotePlayers[id].AddSnapshot(payload);
-        }
+
+        GameManager.Instance.remotePlayers[id].AddSnapshot(payload);
     }
 }

@@ -203,6 +203,16 @@ public class SnapshotInterpolationTransform : SnapshotInterpolation<SnapshotInte
     {
         public Vector3 Position;
         public Vector3 Rotation;
+
+        public static TransformData GetValue(StatePayload payload)
+        {
+            TransformData value;
+
+            value.Position = payload.Position;
+            value.Rotation = payload.Rotation;
+
+            return value;
+        }
     }
 
     protected override TransformData Interpolate(TransformData from, TransformData to, float alpha)

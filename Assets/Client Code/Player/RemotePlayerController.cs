@@ -1,4 +1,5 @@
 using UnityEngine;
+using TransformData = SnapshotInterpolationTransform.TransformData;
 
 public class RemotePlayerController : MonoBehaviour
 {
@@ -21,8 +22,5 @@ public class RemotePlayerController : MonoBehaviour
         transform.eulerAngles = _interpolation.Current.Rotation;
     }
 
-    public void AddSnapshot(StatePayload payload)
-    {
-        _interpolation.Add(payload.Time, new SnapshotInterpolationTransform.TransformData { Position = payload.Position, Rotation = payload.Rotation  });
-    }
+    public void AddSnapshot(StatePayload payload) => _interpolation.Add(payload.Time, TransformData.GetValue(payload) );
 }

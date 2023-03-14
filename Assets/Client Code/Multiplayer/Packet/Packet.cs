@@ -141,12 +141,20 @@ public class Packet : IDisposable
         Write(value.x);
         Write(value.y);
     }
-    
+
     public void Write(Vector3 value)
     {
         Write(value.x);
         Write(value.y);
         Write(value.z);
+    }
+
+    public void Write(Quaternion value)
+    {
+        Write(value.x);
+        Write(value.y);
+        Write(value.z);
+        Write(value.w);
     }
     #endregion
 
@@ -313,6 +321,7 @@ public class Packet : IDisposable
     #region Read Custom Data
     public Vector3 ReadVector2() => new Vector2(ReadFloat(), ReadFloat());
     public Vector3 ReadVector3() => new Vector3(ReadFloat(), ReadFloat(), ReadFloat());
+    public Quaternion ReadQuaternion() => new Quaternion(ReadFloat(), ReadFloat(), ReadFloat(), ReadFloat());
     #endregion
 
     public void Dispose()
